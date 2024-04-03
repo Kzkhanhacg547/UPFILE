@@ -1,96 +1,115 @@
-const express = require('express');
-const multer = require('multer');
-const fs = require('fs');
-const path = require('path');
-
-const app = express();
-
-const PORT = 3000;
-
-// Set up multer for file uploads
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/');
-    },
-    filename: (req, file, cb) => {
-        const currentDate = new Date();
-        const day = currentDate.getDate();
-        const month = currentDate.getMonth() + 1;
-        const year = currentDate.getFullYear();
-        const hours = currentDate.getHours();
-        const minutes = currentDate.getMinutes();
-        const seconds = currentDate.getSeconds();
-        const timestamp = `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
-        const originalName = file.originalname.replace(/\s+/g, '_'); // Replace spaces with underscores
-
-        // Check if file with same name exists
-        let counter = 0;
-        let newFileName = `${req.body.fileName}_${timestamp}_${originalName}`;
-        while (fs.existsSync(path.join(__dirname, 'uploads', newFileName))) {
-            counter++;
-            newFileName = `${req.body.fileName}_${timestamp}_${counter}_${originalName}`;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional File Upload</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f7f7f7;
         }
-
-        cb(null, newFileName);
-    }
-});
-
-const upload = multer({ storage: storage });
-
-// Serve the HTML files
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Handle file uploads
-app.post('/upload', upload.single('file'), (req, res) => {
-    const file = req.file;
-    const fileName = req.body.fileName;
-
-    if (!file || !fileName) {
-        return res.status(400).send('Please provide both file and file name');
-    }
-
-    const uniqueSuffix = `${fileName}_${new Date().toISOString().replace(/[-:]/g, '').replace('T', '').split('.')[0]}`;
-    const newFileName = `${uniqueSuffix}${path.extname(file.originalname)}`;
-    const newFilePath = path.join(__dirname, 'uploads', newFileName);
-
-    fs.rename(file.path, newFilePath, (err) => {
-        if (err) {
-            return res.status(500).send('Error uploading file');
+        .container {
+            text-align: center;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease-in-out;
         }
-        res.redirect('/');
-    });
-});
-
-// Serve uploaded files
-app.get('/uploads/:fileName', (req, res) => {
-    const fileName = req.params.fileName;
-    const filePath = path.join(__dirname, 'uploads', fileName);
-
-    fs.exists(filePath, exists => {
-        if (exists) {
-            res.sendFile(filePath);
-        } else {
-            res.status(404).send('File not found');
+        .container:hover {
+            transform: translateY(-5px);
         }
-    });
-});
-
-// Get list of uploaded files
-app.get('/files', (req, res) => {
-    fs.readdir('uploads', (err, files) => {
-        if (err) {
-            res.status(500).send('Error retrieving files');
-        } else {
-            res.json(files);
+        h1 {
+            margin-bottom: 20px;
         }
-    });
-});
+        input[type="file"] {
+            margin-bottom: 10px;
+        }
+        input[type="text"] {
+            margin-bottom: 20px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button[type="submit"] {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-right: 10px; /* Add margin-right for spacing */
+        }
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        .redirect-button { /* Style for the redirect button */
+            padding: 10px 20px;
+            background-color: #28a745; /* Green color */
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .redirect-button:hover {
+            background-color: #218838; /* Darker green on hover */
+        }
+        .upload-message {
+            margin-top: 20px;
+            color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Professional File Upload</h1>
+        <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+            <input type="text" name="fileName" placeholder="Enter file name"> <!-- Thêm input cho người dùng nhập tên file -->
+            <input type="file" name="file" id="fileInput">
+            <button type="submit">Upload</button>
+        </form>
+        <!-- Add the redirect button -->
+        <button class="redirect-button" onclick="window.location.href='/file-list'">View Uploaded Files</button>
+        <!-- Upload message -->
+        <div class="upload-message" id="uploadMessage"></div>
+    </div>
 
-// Serve files.html
-app.get('/file-list', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'files.html'));
-});
+    <script>
+        // Hiệu ứng cho input file khi hover
+        const fileInput = document.getElementById('fileInput');
+        fileInput.addEventListener('mouseover', function() {
+            this.style.opacity = '0.8';
+        });
+        fileInput.addEventListener('mouseout', function() {
+            this.style.opacity = '1';
+        });
 
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-});
+        // Hiệu ứng cho nút upload khi hover
+        const uploadButton = document.querySelector('button[type="submit"]');
+        uploadButton.addEventListener('mouseover', function() {
+            this.style.backgroundColor = '#0056b3';
+        });
+        uploadButton.addEventListener('mouseout', function() {
+            this.style.backgroundColor = '#007bff';
+        });
+
+        // Show upload message
+        const uploadForm = document.getElementById('uploadForm');
+        uploadForm.addEventListener('submit', function(event) {
+            const fileName = document.querySelector('input[name="fileName"]').value;
+            const uploadMessage = document.getElementById('uploadMessage');
+            uploadMessage.textContent = `Your file has been saved with the name: ${fileName}`;
+        });
+    </script>
+</body>
+</html>

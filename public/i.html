@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional File Upload</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f7f7f7;
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease-in-out;
+            max-width: 400px;
+            width: 100%;
+        }
+        .container:hover {
+            transform: translateY(-5px);
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        input[type="text"],
+        input[type="file"] {
+            margin-bottom: 10px;
+            display: block;
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button[type="submit"],
+        .redirect-button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button[type="submit"]:hover,
+        .redirect-button:hover {
+            background-color: #0056b3;
+        }
+        .redirect-button {
+            background-color: #28a745;
+        }
+        .upload-message {
+            margin-top: 20px;
+            color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Professional File Upload</h1>
+        <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+            <div style="text-align: left;">
+                <label for="fileName">File Name:</label><br>
+                <input type="text" id="fileName" name="fileName" placeholder="Enter file name"><br>
+            </div>
+            <input type="file" name="file" id="fileInput">
+            <button type="submit">Upload</button>
+        </form>
+        <button class="redirect-button" onclick="window.location.href='/file-list'">View Uploaded Files</button>
+        <div class="upload-message" id="uploadMessage"></div>
+    </div>
+
+    <script>
+        // Hover effect for upload button
+        const uploadButton = document.querySelector('button[type="submit"]');
+        uploadButton.addEventListener('mouseover', function() {
+            this.style.backgroundColor = '#0056b3';
+        });
+        uploadButton.addEventListener('mouseout', function() {
+            this.style.backgroundColor = '#007bff';
+        });
+
+        // Show upload message
+        const uploadForm = document.getElementById('uploadForm');
+        uploadForm.addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent form submission
+            const fileName = document.getElementById('fileName').value;
+            const uploadMessage = document.getElementById('uploadMessage');
+            uploadMessage.textContent = `Your file has been saved with the name: ${fileName}`;
+        });
+    </script>
+</body>
+</html>
